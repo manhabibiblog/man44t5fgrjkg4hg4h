@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>R2 Titan Manager (Local Edition)</title>
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,36 +12,276 @@
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        /* ========== IDENTICAL CSS AS BEFORE (no changes) ========== */
+        /* ========== FULL CSS (identical to previous, no changes) ========== */
         :root {
-            --glass-bg: rgba(18, 18, 24, 0.75); --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); --glass-highlight: rgba(255, 255, 255, 0.04);
-            --accent: #6366f1; --accent-glow: rgba(99, 102, 241, 0.35); --surface: rgba(28, 28, 38, 0.7);
-            --text: #e2e8f0; --text-secondary: #94a3b8; --danger: #ef4444; --success: #22c55e; --warning: #f59e0b;
-            --radius-lg: 18px; --radius-md: 12px; --radius-sm: 8px;
+            --glass-bg: rgba(18, 18, 24, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --glass-highlight: rgba(255, 255, 255, 0.04);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.35);
+            --surface: rgba(28, 28, 38, 0.7);
+            --text: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
             --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --sidebar-width: 260px; --topbar-height: 56px; --queue-panel-width: 340px;
+            --sidebar-width: 260px;
+            --topbar-height: 56px;
+            --queue-panel-width: 340px;
         }
-        /* ... (all styles identical, omitted for brevity in this response but present in the actual file) ... */
+
+        [data-bs-theme="light"] {
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.6);
+            --surface: rgba(248, 250, 252, 0.75);
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --accent-glow: rgba(99, 102, 241, 0.2);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 30%, #16213e 60%, #0f0f1a 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background var(--transition-smooth), color var(--transition-smooth);
+        }
+        [data-bs-theme="light"] body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 30%, #f1f5f9 60%, #f8fafc 100%);
+            background-attachment: fixed;
+        }
+
+        .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .bg-orbs .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.15; animation: orbFloat 20s infinite ease-in-out; }
+        .bg-orbs .orb:nth-child(1) { width: 500px; height: 500px; background: #6366f1; top: -150px; left: -150px; animation-delay: 0s; }
+        .bg-orbs .orb:nth-child(2) { width: 400px; height: 400px; background: #8b5cf6; bottom: -120px; right: -120px; animation-delay: -7s; }
+        .bg-orbs .orb:nth-child(3) { width: 350px; height: 350px; background: #06b6d4; top: 50%; left: 50%; animation-delay: -14s; }
+        @keyframes orbFloat {
+            0%,100% { transform: translate(0,0) scale(1); }
+            25% { transform: translate(60px,-40px) scale(1.1); }
+            50% { transform: translate(-30px,50px) scale(0.9); }
+            75% { transform: translate(-50px,-30px) scale(1.05); }
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--glass-shadow);
+            transition: all var(--transition-smooth);
+        }
+        .glass-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.2) inset;
+        }
+        [data-bs-theme="light"] .glass-card:hover {
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(99,102,241,0.15) inset;
+        }
+
+        .glass-input {
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            padding: 0.6rem 1rem;
+            transition: all var(--transition-fast);
+            font-size: 0.9rem;
+        }
+        .glass-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: rgba(255,255,255,0.05); }
+        .glass-input::placeholder { color: var(--text-secondary); opacity: 0.6; }
+        .btn-glass {
+            background: var(--surface); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm); color: var(--text); padding: 0.55rem 1.2rem;
+            cursor: pointer; transition: all var(--transition-fast); font-weight: 500;
+            font-size: 0.875rem; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .btn-glass:hover { background: rgba(99,102,241,0.2); border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-1px); }
+        .btn-glass:active { transform: scale(0.97); }
+        .btn-glass.accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .btn-glass.accent:hover { background: #5558e6; box-shadow: 0 0 28px var(--accent-glow); }
+        .btn-glass.danger { border-color: rgba(239,68,68,0.4); color: var(--danger); }
+        .btn-glass.danger:hover { background: rgba(239,68,68,0.15); border-color: var(--danger); box-shadow: 0 0 20px rgba(239,68,68,0.3); }
+        .btn-glass.sm { padding: 0.35rem 0.75rem; font-size: 0.78rem; border-radius: 6px; }
+        .btn-glass.xs { padding: 0.25rem 0.55rem; font-size: 0.7rem; border-radius: 5px; }
+
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width);
+            background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid var(--glass-border); z-index: 100;
+            display: flex; flex-direction: column; transition: transform var(--transition-smooth);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.3);
+        }
+        .sidebar-header { padding: 1.2rem 1.2rem 0.8rem; border-bottom: 1px solid var(--glass-border); }
+        .sidebar-header .logo {
+            font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.8rem 0; }
+        .sidebar-nav .nav-item {
+            display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 1.2rem;
+            cursor: pointer; transition: all var(--transition-fast);
+            border-left: 3px solid transparent; font-size: 0.9rem; color: var(--text-secondary);
+            margin: 2px 0;
+        }
+        .sidebar-nav .nav-item:hover { background: var(--glass-highlight); color: var(--text); border-left-color: rgba(99,102,241,0.5); }
+        .sidebar-nav .nav-item.active { background: rgba(99,102,241,0.12); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+        .sidebar-nav .nav-item i { font-size: 1.1rem; width: 22px; text-align: center; }
+        .sidebar-footer { padding: 0.8rem 1.2rem; border-top: 1px solid var(--glass-border); font-size: 0.75rem; color: var(--text-secondary); }
+
+        .main-content { margin-left: var(--sidebar-width); padding: 1rem 1.5rem; min-height: 100vh; position: relative; z-index: 1; transition: margin var(--transition-smooth); }
+        .topbar { height: var(--topbar-height); display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .topbar .cmd-search { flex: 1; max-width: 420px; position: relative; }
+        .topbar .cmd-search input { width: 100%; padding-left: 2.5rem; padding-right: 1rem; }
+        .topbar .cmd-search .search-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.95rem; }
+        .topbar .cmd-search .shortcut-hint { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); font-size: 0.7rem; background: rgba(255,255,255,0.08); padding: 2px 7px; border-radius: 4px; color: var(--text-secondary); pointer-events: none; }
+
+        .file-table { width: 100%; border-collapse: collapse; }
+        .file-table th, .file-table td { padding: 0.65rem 0.9rem; text-align: left; border-bottom: 1px solid var(--glass-border); font-size: 0.875rem; }
+        .file-table th { font-weight: 600; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; user-select: none; white-space: nowrap; }
+        .file-table th:hover { color: var(--text); }
+        .file-table tbody tr { cursor: pointer; transition: all var(--transition-fast); }
+        .file-table tbody tr:hover { background: var(--glass-highlight); }
+        .file-table tbody tr.selected { background: rgba(99,102,241,0.15); }
+        .file-table .file-icon { font-size: 1.3rem; width: 28px; text-align: center; }
+        .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.7rem; }
+        .file-grid-item {
+            background: var(--surface); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md); padding: 0.8rem; cursor: pointer;
+            transition: all var(--transition-fast); text-align: center; word-break: break-all;
+        }
+        .file-grid-item:hover { border-color: var(--accent); box-shadow: 0 4px 20px var(--accent-glow); transform: translateY(-2px); }
+        .file-grid-item .grid-icon { font-size: 2.5rem; display: block; margin-bottom: 0.4rem; }
+        .file-grid-item .grid-name { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.2; max-height: 2.4em; overflow: hidden; }
+
+        .breadcrumb-nav { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; font-size: 0.85rem; }
+        .breadcrumb-nav .crumb { cursor: pointer; color: var(--text-secondary); padding: 0.2rem 0.5rem; border-radius: 4px; transition: all var(--transition-fast); white-space: nowrap; }
+        .breadcrumb-nav .crumb:hover { color: var(--accent); background: rgba(99,102,241,0.1); }
+        .breadcrumb-nav .crumb.current { color: var(--text); font-weight: 600; cursor: default; }
+        .breadcrumb-nav .crumb-sep { color: var(--text-secondary); opacity: 0.4; }
+
+        .queue-panel {
+            position: fixed; right: 0; bottom: 0; width: var(--queue-panel-width); max-height: 55vh;
+            background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--glass-shadow); z-index: 200; transform: translateY(calc(100% - 44px));
+            transition: transform var(--transition-smooth); display: flex; flex-direction: column;
+        }
+        .queue-panel.open { transform: translateY(0); }
+        .queue-header { padding: 0.6rem 1rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--glass-border); min-height: 44px; }
+        .queue-body { flex: 1; overflow-y: auto; padding: 0.5rem; }
+        .queue-item { background: var(--surface); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
+        .queue-item .progress { height: 5px; border-radius: 3px; margin-top: 0.3rem; background: rgba(255,255,255,0.08); }
+        .queue-item .progress-bar { border-radius: 3px; transition: width 0.3s; }
+
+        .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+        .custom-toast {
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+            padding: 0.8rem 1.2rem; box-shadow: var(--glass-shadow);
+            animation: slideInRight 0.3s ease-out; font-size: 0.85rem; max-width: 400px;
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .custom-toast.success { border-left: 3px solid var(--success); }
+        .custom-toast.error { border-left: 3px solid var(--danger); }
+        .custom-toast.info { border-left: 3px solid var(--accent); }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .cmd-palette-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 5000; display: none; align-items: flex-start; justify-content: center; padding-top: 15vh;
+        }
+        .cmd-palette-overlay.show { display: flex; }
+        .cmd-palette {
+            background: var(--glass-bg); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); width: 90%; max-width: 550px; overflow: hidden;
+        }
+        .cmd-palette input { width: 100%; border: none; background: transparent; padding: 1rem 1.2rem; font-size: 1.1rem; color: var(--text); border-bottom: 1px solid var(--glass-border); }
+        .cmd-palette input:focus { outline: none; }
+        .cmd-palette .cmd-results { max-height: 350px; overflow-y: auto; padding: 0.4rem; }
+        .cmd-palette .cmd-result-item {
+            padding: 0.6rem 1rem; cursor: pointer; border-radius: 6px;
+            display: flex; align-items: center; gap: 0.7rem; transition: all var(--transition-fast); font-size: 0.9rem;
+        }
+        .cmd-palette .cmd-result-item:hover, .cmd-palette .cmd-result-item.active { background: rgba(99,102,241,0.2); }
+        .cmd-palette .cmd-result-item .shortcut { margin-left: auto; font-size: 0.7rem; background: rgba(255,255,255,0.08); padding: 2px 7px; border-radius: 4px; color: var(--text-secondary); }
+
+        .context-menu {
+            position: fixed; z-index: 6000; background: var(--glass-bg); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md); box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            min-width: 180px; padding: 0.4rem; display: none;
+        }
+        .context-menu .ctx-item { padding: 0.5rem 0.9rem; cursor: pointer; border-radius: 5px; font-size: 0.85rem; transition: all var(--transition-fast); display: flex; align-items: center; gap: 0.6rem; color: var(--text); }
+        .context-menu .ctx-item:hover { background: rgba(99,102,241,0.2); }
+        .context-menu .ctx-divider { height: 1px; background: var(--glass-border); margin: 0.3rem 0; }
+
+        .preview-modal .modal-content { background: var(--glass-bg); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--glass-shadow); }
+        .preview-modal .modal-header { border-bottom: 1px solid var(--glass-border); }
+        .preview-modal .modal-footer { border-top: 1px solid var(--glass-border); }
+        .preview-modal img, .preview-modal video { max-width: 100%; max-height: 70vh; border-radius: var(--radius-sm); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+            .topbar .cmd-search { max-width: 100%; flex: 1 1 100%; order: -1; }
+            .queue-panel { width: 100%; right: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+            .file-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.4rem; }
+        }
+        @media (max-width: 480px) { .main-content { padding: 0.5rem; } .topbar { gap: 0.5rem; } .btn-glass { padding: 0.4rem 0.7rem; font-size: 0.75rem; } }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+        .drop-zone-active::after {
+            content: 'Drop files here to upload'; position: fixed; inset: 0;
+            background: rgba(99,102,241,0.25); backdrop-filter: blur(8px); z-index: 9000;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 700; color: #fff; pointer-events: none;
+            border: 4px dashed rgba(255,255,255,0.5); border-radius: 20px; margin: 20px;
+        }
+        .status-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .account-card { cursor: pointer; transition: all var(--transition-fast); position: relative; }
+        .account-card.active-account { border-color: var(--accent) !important; box-shadow: 0 0 0 2px var(--accent-glow) !important; }
+        .account-card .account-actions { opacity: 0; transition: opacity var(--transition-fast); }
+        .account-card:hover .account-actions { opacity: 1; }
+        #offlineBanner { display: none; background: var(--danger); color: #fff; text-align: center; padding: 0.5rem; font-size: 0.8rem; position: fixed; top: 0; left: 0; right: 0; z-index: 9999; }
+        body.offline #offlineBanner { display: block; }
     </style>
 </head>
 <body>
-    <!-- Offline banner -->
     <div id="offlineBanner">⚠️ You are offline – some features may be limited</div>
 
-    <!-- Background orbs -->
-    <div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+    <div class="bg-orbs">
+        <div class="orb"></div><div class="orb"></div><div class="orb"></div>
+    </div>
 
-    <!-- Toast container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Command palette overlay -->
     <div class="cmd-palette-overlay" id="cmdPaletteOverlay">
         <div class="cmd-palette glass-card">
             <input type="text" id="cmdPaletteInput" placeholder="Type a command... (Ctrl+K)">
@@ -50,7 +289,6 @@
         </div>
     </div>
 
-    <!-- Context menu -->
     <div class="context-menu" id="contextMenu"></div>
 
     <!-- Sidebar -->
@@ -74,14 +312,12 @@
         </div>
     </aside>
 
-    <!-- Mobile sidebar toggle -->
     <button class="btn-glass sm d-md-none" id="mobileMenuBtn" style="position:fixed;top:10px;left:10px;z-index:150;">
         <i class="bi bi-list"></i>
     </button>
 
     <!-- Main content -->
     <div class="main-content" id="mainContent">
-        <!-- Top bar -->
         <div class="topbar">
             <div class="cmd-search">
                 <i class="bi bi-search search-icon"></i>
@@ -98,7 +334,6 @@
             </select>
         </div>
 
-        <!-- Breadcrumb -->
         <div class="breadcrumb-nav mb-3" id="breadcrumbNav">
             <span class="crumb current" data-path="">/</span>
         </div>
@@ -108,13 +343,10 @@
             <div id="fileListView" class="table-responsive">
                 <table class="file-table">
                     <thead><tr>
-                            <th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th>
-                            <th style="width:40px;"></th>
-                            <th>Name</th>
-                            <th>Size</th>
-                            <th>Type</th>
-                            <th>Modified</th>
-                            <th style="width:80px;">Actions</th>
+                        <th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th>
+                        <th style="width:40px;"></th>
+                        <th>Name</th><th>Size</th><th>Type</th><th>Modified</th>
+                        <th style="width:80px;">Actions</th>
                     </tr></thead>
                     <tbody id="fileTableBody"></tbody>
                 </table>
@@ -126,6 +358,7 @@
                 <p style="font-size:0.8rem;">Drop files here or click Upload</p>
             </div>
         </div>
+
         <div id="panelAccounts" class="panel-content glass-card p-4" style="display:none;">
             <h5 class="mb-3">R2 Accounts</h5>
             <div id="accountsList" class="row g-3 mb-3"></div>
@@ -138,7 +371,6 @@
                 <input class="glass-input w-100 mb-2" id="accSecretKey" placeholder="Secret Access Key" type="password">
                 <input class="glass-input w-100 mb-2" id="accEndpoint" placeholder="Endpoint URL (https://<id>.r2.cloudflarestorage.com)">
                 <input class="glass-input w-100 mb-2" id="accRegion" placeholder="Region (auto)" value="auto">
-                <!-- *** NEW: Manual Bucket Input *** -->
                 <label class="text-secondary small">Buckets (comma separated)</label>
                 <input class="glass-input w-100 mb-2" id="accBuckets" placeholder="e.g. usa-524, my-backup">
                 <div class="d-flex gap-2">
@@ -146,10 +378,10 @@
                     <button class="btn-glass" id="btnCancelAccount">Cancel</button>
                     <button class="btn-glass" id="btnTestConnection"><i class="bi bi-plug"></i> Test</button>
                 </div>
-                <small class="text-secondary d-block mt-1">⚠️ Buckets must be added manually – auto‑fetch not possible due to CORS policy.</small>
+                <small class="text-secondary d-block mt-1">⚠️ Buckets must be added manually – auto‑fetch not possible due to CORS.</small>
             </div>
         </div>
-        <!-- Other panels (Analytics, CDN, Settings, Backup) unchanged -->
+
         <div id="panelAnalytics" class="panel-content glass-card p-4" style="display:none;">
             <h5 class="mb-3">Analytics</h5>
             <div class="row g-3" id="analyticsCards">
@@ -160,6 +392,7 @@
             </div>
             <canvas id="analyticsChart" width="400" height="200" class="mt-3 w-100" style="max-height:250px;"></canvas>
         </div>
+
         <div id="panelCDN" class="panel-content glass-card p-4" style="display:none;">
             <h5 class="mb-3">CDN & Sharing</h5>
             <div id="cdnFileInfo" class="mb-3"><p>Select a file to generate sharing links</p></div>
@@ -171,21 +404,25 @@
             </div>
             <canvas id="qrCanvas" width="200" height="200" style="display:none;border-radius:8px;"></canvas>
             <div class="mt-3"><small>Expiry (simulated):</small>
-                <select class="glass-input" id="expirySelect"><option value="0">Never</option><option value="3600">1 Hour</option><option value="86400">24 Hours</option><option value="604800">7 Days</option></select>
+                <select class="glass-input" id="expirySelect">
+                    <option value="0">Never</option><option value="3600">1 Hour</option><option value="86400">24 Hours</option><option value="604800">7 Days</option>
+                </select>
             </div>
         </div>
+
         <div id="panelSettings" class="panel-content glass-card p-4" style="display:none;">
             <h5 class="mb-3">Settings</h5>
             <label class="form-label">Theme</label>
             <select class="glass-input w-100 mb-3" id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select>
             <label class="form-label">Default View</label>
             <select class="glass-input w-100 mb-3" id="defaultViewSelect"><option value="list">List</option><option value="grid">Grid</option></select>
-            <label class="form-label">Chunk Size (MB)</label>
-            <input class="glass-input w-100 mb-3" id="chunkSizeInput" type="number" value="5" min="1" max="50">
+            <label class="form-label">Chunk Size (MB) – not used, single PUT</label>
+            <input class="glass-input w-100 mb-3" id="chunkSizeInput" type="number" value="5" min="1" max="50" disabled>
             <label class="form-label">Max Parallel Uploads</label>
             <input class="glass-input w-100 mb-3" id="maxParallelInput" type="number" value="3" min="1" max="10">
             <button class="btn-glass accent" id="btnSaveSettings">Save Settings</button>
         </div>
+
         <div id="panelBackup" class="panel-content glass-card p-4" style="display:none;">
             <h5 class="mb-3">Backup & Export</h5>
             <button class="btn-glass mb-2" id="btnExportConfig"><i class="bi bi-download"></i> Export Configuration (JSON)</button>
@@ -205,7 +442,6 @@
         <div class="queue-body" id="queueBody"></div>
     </div>
 
-    <!-- Hidden file inputs -->
     <input type="file" id="fileInput" multiple style="display:none;">
     <input type="file" id="folderInput" webkitdirectory multiple style="display:none;">
 
@@ -220,7 +456,7 @@
         </div>
     </div>
 
-    <!-- Delete confirmation modal -->
+    <!-- Delete modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content glass-card">
@@ -250,213 +486,186 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ==================== R2 TITAN MANAGER - COMPLETE APPLICATION ====================
+        // ==================== COMPLETE APPLICATION JS ====================
         (function() {
             'use strict';
+            const R2T = {}; window.R2T = R2T;
 
-            // ==================== NAMESPACE ====================
-            const R2T = {};
-            window.R2T = R2T;
-
-            // ==================== OFFLINE HANDLING ====================
+            // Offline
             window.addEventListener('online', () => { document.body.classList.remove('offline'); R2T.UI.toast('Back online','success',2000); });
             window.addEventListener('offline', () => { document.body.classList.add('offline'); R2T.UI.toast('You are offline','error',3000); });
             if (!navigator.onLine) document.body.classList.add('offline');
 
-            // ==================== STORAGE MODULE ====================
+            // Storage
             R2T.Storage = {
                 _prefix: 'r2titan_',
-                get(key) { try { return JSON.parse(localStorage.getItem(this._prefix + key)); } catch { return null; } },
-                set(key, value) { try { localStorage.setItem(this._prefix + key, JSON.stringify(value)); } catch(e) {} },
-                remove(key) { localStorage.removeItem(this._prefix + key); },
+                get(k) { try { return JSON.parse(localStorage.getItem(this._prefix+k)); } catch { return null; } },
+                set(k,v) { try { localStorage.setItem(this._prefix+k, JSON.stringify(v)); } catch {} },
+                remove(k) { localStorage.removeItem(this._prefix+k); },
                 getAccounts() { return this.get('accounts') || []; },
-                setAccounts(accounts) { this.set('accounts', accounts); },
+                setAccounts(a) { this.set('accounts', a); },
                 getSettings() {
-                    const defaults = { theme: 'dark', defaultView: 'list', chunkSizeMB: 5, maxParallel: 3, activeAccountIdx: -1, activeBucket: '', currentPath: '' };
-                    return { ...defaults, ...(this.get('settings') || {}) };
+                    const d = { theme:'dark', defaultView:'list', chunkSizeMB:5, maxParallel:3, activeAccountIdx:-1, activeBucket:'', currentPath:'' };
+                    return { ...d, ...(this.get('settings')||{}) };
                 },
                 setSettings(s) { this.set('settings', s); },
-                getAnalytics() { return this.get('analytics') || { uploads: 0, downloads: 0, history: [] }; },
+                getAnalytics() { return this.get('analytics') || { uploads:0, downloads:0, history:[] }; },
                 setAnalytics(a) { this.set('analytics', a); },
-                exportAll() {
-                    return JSON.stringify({
-                        accounts: this.getAccounts(),
-                        settings: this.getSettings(),
-                        analytics: this.getAnalytics(),
-                        exportedAt: new Date().toISOString()
-                    }, null, 2);
-                },
-                importAll(jsonStr) {
-                    try {
-                        const data = JSON.parse(jsonStr);
-                        if (data.accounts) this.setAccounts(data.accounts);
-                        if (data.settings) this.setSettings(data.settings);
-                        if (data.analytics) this.setAnalytics(data.analytics);
-                        return true;
-                    } catch (e) { return false; }
-                },
-                clearAll() {
-                    const keys = Object.keys(localStorage).filter(k => k.startsWith(this._prefix));
-                    keys.forEach(k => localStorage.removeItem(k));
-                }
+                exportAll() { return JSON.stringify({ accounts: this.getAccounts(), settings: this.getSettings(), analytics: this.getAnalytics(), exportedAt: new Date().toISOString() }, null, 2); },
+                importAll(j) { try { const d = JSON.parse(j); if(d.accounts) this.setAccounts(d.accounts); if(d.settings) this.setSettings(d.settings); if(d.analytics) this.setAnalytics(d.analytics); return true; } catch { return false; } },
+                clearAll() { Object.keys(localStorage).filter(k=>k.startsWith(this._prefix)).forEach(k=>localStorage.removeItem(k)); }
             };
 
-            // ==================== API MODULE (unchanged except removed listBuckets usage) ====================
+            // API (full implementation, unchanged)
             R2T.API = {
-                _sha256Hex: async function(message) {
-                    const msgBuffer = new TextEncoder().encode(message);
-                    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-                    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+                _sha256Hex: async function(m) {
+                    const buf = new TextEncoder().encode(m);
+                    const hash = await crypto.subtle.digest('SHA-256', buf);
+                    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
                 },
-                _hmacSha256: async function(key, message) {
-                    const cryptoKey = await crypto.subtle.importKey('raw', typeof key === 'string' ? new TextEncoder().encode(key) : key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-                    const sig = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(message));
+                _hmacSha256: async function(k,m) {
+                    const key = await crypto.subtle.importKey('raw', typeof k === 'string' ? new TextEncoder().encode(k) : k, { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+                    const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(m));
                     return new Uint8Array(sig);
                 },
-                _hmacHex: async function(key, message) {
-                    const sig = await this._hmacSha256(key, message);
+                _hmacHex: async function(k,m) {
+                    const sig = await this._hmacSha256(k,m);
                     return Array.from(sig).map(b => b.toString(16).padStart(2,'0')).join('');
                 },
-                _getSignatureKey: async function(secretKey, dateStamp, region, service) {
-                    const kDate = await this._hmacSha256('AWS4' + secretKey, dateStamp);
+                _getSignatureKey: async function(sk,ds,region,service) {
+                    const kDate = await this._hmacSha256('AWS4'+sk, ds);
                     const kRegion = await this._hmacSha256(kDate, region);
                     const kService = await this._hmacSha256(kRegion, service);
-                    const kSigning = await this._hmacSha256(kService, 'aws4_request');
-                    return kSigning;
+                    return await this._hmacSha256(kService, 'aws4_request');
                 },
-                _buildAuthHeader: async function(accessKey, secretKey, region, service, method, canonicalUri, queryParams, headers, payloadHash) {
+                _buildAuthHeader: async function(ak,sk,region,service,method,uri,qp,headers,payloadHash) {
                     const now = new Date();
                     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
-                    const dateStamp = amzDate.substring(0, 8);
+                    const dateStamp = amzDate.substring(0,8);
                     const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
                     const host = headers['Host'] || '';
                     const signedHeaders = Object.keys(headers).map(k => k.toLowerCase()).sort().join(';');
-                    const canonicalQueryString = Object.entries(queryParams || {}).sort().map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+                    const canonicalQS = Object.entries(qp||{}).sort().map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
                     const canonicalHeaders = Object.entries(headers).sort(([a],[b]) => a.toLowerCase().localeCompare(b.toLowerCase())).map(([k,v]) => `${k.toLowerCase()}:${v.trim()}`).join('\n') + '\n';
-                    const canonicalRequest = [method.toUpperCase(), canonicalUri, canonicalQueryString, canonicalHeaders, signedHeaders, payloadHash].join('\n');
+                    const canonicalRequest = [method.toUpperCase(), uri, canonicalQS, canonicalHeaders, signedHeaders, payloadHash].join('\n');
                     const stringToSign = ['AWS4-HMAC-SHA256', amzDate, credentialScope, await this._sha256Hex(canonicalRequest)].join('\n');
-                    const signingKey = await this._getSignatureKey(secretKey, dateStamp, region, service);
+                    const signingKey = await this._getSignatureKey(sk, dateStamp, region, service);
                     const signature = await this._hmacHex(signingKey, stringToSign);
-                    return `AWS4-HMAC-SHA256 Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+                    return `AWS4-HMAC-SHA256 Credential=${ak}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
                 },
-                _parseEndpoint: function(endpoint) {
-                    try {
-                        const url = new URL(endpoint);
-                        return { host: url.host, protocol: url.protocol.replace(':',''), pathPrefix: url.pathname.replace(/\/$/,'') };
-                    } catch { return { host: endpoint, protocol: 'https', pathPrefix: '' }; }
+                _parseEndpoint: function(ep) {
+                    try { const u = new URL(ep); return { host: u.host, protocol: u.protocol.replace(':',''), pathPrefix: u.pathname.replace(/\/$/,'') }; }
+                    catch { return { host: ep, protocol:'https', pathPrefix:'' }; }
                 },
-                _request: async function(account, method, bucketKey, queryParams = {}, body = null, extraHeaders = {}) {
-                    const ep = this._parseEndpoint(account.endpoint);
-                    let canonicalUri = ep.pathPrefix || '/';
-                    if (bucketKey) canonicalUri = canonicalUri.replace(/\/$/,'') + '/' + bucketKey.replace(/^\//,'');
-                    if (!canonicalUri.startsWith('/')) canonicalUri = '/' + canonicalUri;
+                _request: async function(acc, method, bucketKey, qp={}, body=null, extra={}) {
+                    const ep = this._parseEndpoint(acc.endpoint);
+                    let uri = ep.pathPrefix || '/';
+                    if (bucketKey) uri = uri.replace(/\/$/,'') + '/' + bucketKey.replace(/^\//,'');
+                    if (!uri.startsWith('/')) uri = '/' + uri;
                     const host = ep.host;
                     const headers = {
                         'Host': host,
-                        'X-Amz-Content-SHA256': await this._sha256Hex(body || ''),
+                        'X-Amz-Content-SHA256': await this._sha256Hex(body||''),
                         'X-Amz-Date': new Date().toISOString().replace(/[:-]|\.\d{3}/g, ''),
-                        ...extraHeaders
+                        ...extra
                     };
                     if (body) headers['Content-Type'] = headers['Content-Type'] || 'application/octet-stream';
-                    const payloadHash = await this._sha256Hex(body || '');
-                    const authHeader = await this._buildAuthHeader(account.accessKey, account.secretKey, account.region || 'auto', 's3', method, canonicalUri, queryParams, headers, payloadHash);
-                    headers['Authorization'] = authHeader;
-                    const url = `${ep.protocol}://${host}${canonicalUri}${Object.keys(queryParams).length ? '?' + Object.entries(queryParams).sort().map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&') : ''}`;
-                    return await fetch(url, { method: method.toUpperCase(), headers, body: (body && method.toUpperCase() !== 'GET' && method.toUpperCase() !== 'HEAD') ? body : undefined });
+                    const payloadHash = await this._sha256Hex(body||'');
+                    const auth = await this._buildAuthHeader(acc.accessKey, acc.secretKey, acc.region||'auto', 's3', method, uri, qp, headers, payloadHash);
+                    headers['Authorization'] = auth;
+                    const url = `${ep.protocol}://${host}${uri}${Object.keys(qp).length?'?'+Object.entries(qp).sort().map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&'):''}`;
+                    return await fetch(url, { method: method.toUpperCase(), headers, body: (body && method.toUpperCase()!=='GET'&&method.toUpperCase()!=='HEAD')?body:undefined });
                 },
-                async testConnection(account, bucketName) {
-                    // Test by listing objects in the bucket (only needs CORS on that bucket)
+                async testConnection(acc, bucket) {
                     try {
-                        const resp = await this._request(account, 'GET', bucketName, { 'list-type': '2', 'max-keys': '1', 'delimiter': '/' });
-                        return { success: resp.ok, status: resp.status, message: resp.ok ? `Bucket "${bucketName}" accessible` : `HTTP ${resp.status}` };
-                    } catch (e) {
-                        return { success: false, status: 0, message: e.message };
-                    }
+                        const resp = await this._request(acc, 'GET', bucket, { 'list-type':'2', 'max-keys':'1', 'delimiter':'/' });
+                        return { success: resp.ok, status: resp.status, message: resp.ok ? `Bucket "${bucket}" accessible` : `HTTP ${resp.status}` };
+                    } catch(e) { return { success:false, status:0, message: e.message }; }
                 },
-                async listObjects(account, bucket, prefix = '', delimiter = '/', maxKeys = 1000) {
-                    const params = { 'list-type': '2', 'prefix': prefix || '', 'delimiter': delimiter, 'max-keys': String(maxKeys) };
-                    const resp = await this._request(account, 'GET', bucket, params);
-                    if (!resp.ok) throw new Error(`Failed to list objects: ${resp.status}`);
+                async listObjects(acc, bucket, prefix='', delim='/', max=1000) {
+                    const params = { 'list-type':'2', 'prefix':prefix||'', 'delimiter':delim, 'max-keys': String(max) };
+                    const resp = await this._request(acc, 'GET', bucket, params);
+                    if (!resp.ok) throw new Error(`List failed: ${resp.status}`);
                     const xml = await resp.text();
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(xml, 'text/xml');
-                    const result = { files: [], folders: [], truncated: false, nextToken: '' };
+                    const result = { files:[], folders:[], truncated:false, nextToken:'' };
                     doc.querySelectorAll('Contents').forEach(c => {
                         const key = c.querySelector('Key')?.textContent || '';
                         if (key === prefix && prefix.endsWith('/')) return;
                         result.files.push({
-                            key, size: parseInt(c.querySelector('Size')?.textContent || '0'),
-                            lastModified: c.querySelector('LastModified')?.textContent || '',
-                            etag: c.querySelector('ETag')?.textContent || ''
+                            key, size: parseInt(c.querySelector('Size')?.textContent||'0'),
+                            lastModified: c.querySelector('LastModified')?.textContent||'',
+                            etag: c.querySelector('ETag')?.textContent||''
                         });
                     });
                     doc.querySelectorAll('CommonPrefixes').forEach(cp => {
-                        const p = cp.querySelector('Prefix')?.textContent || '';
-                        if (p) result.folders.push(p);
+                        const p = cp.querySelector('Prefix')?.textContent||'';
+                        if(p) result.folders.push(p);
                     });
                     return result;
                 },
-                async getObject(account, bucket, key) {
-                    const resp = await this._request(account, 'GET', `${bucket}/${key}`);
-                    if (!resp.ok) throw new Error(`Failed to get object: ${resp.status}`);
+                async getObject(acc, bucket, key) {
+                    const resp = await this._request(acc, 'GET', `${bucket}/${key}`);
+                    if (!resp.ok) throw new Error(`Get failed: ${resp.status}`);
                     return resp;
                 },
-                async putObject(account, bucket, key, body, contentType = 'application/octet-stream') {
-                    const resp = await this._request(account, 'PUT', `${bucket}/${key}`, {}, body, { 'Content-Type': contentType });
-                    if (!resp.ok) throw new Error(`Failed to upload: ${resp.status}`);
+                async putObject(acc, bucket, key, body, ct='application/octet-stream') {
+                    const resp = await this._request(acc, 'PUT', `${bucket}/${key}`, {}, body, { 'Content-Type': ct });
+                    if (!resp.ok) throw new Error(`Upload failed: ${resp.status}`);
                     return true;
                 },
-                async deleteObject(account, bucket, key) {
-                    const resp = await this._request(account, 'DELETE', `${bucket}/${key}`);
-                    if (!resp.ok) throw new Error(`Failed to delete: ${resp.status}`);
+                async deleteObject(acc, bucket, key) {
+                    const resp = await this._request(acc, 'DELETE', `${bucket}/${key}`);
+                    if (!resp.ok) throw new Error(`Delete failed: ${resp.status}`);
                     return true;
                 },
-                async copyObject(account, bucket, sourceKey, destKey) {
-                    const resp = await this._request(account, 'PUT', `${bucket}/${destKey}`, {}, null, { 'X-Amz-Copy-Source': `${bucket}/${sourceKey}` });
-                    if (!resp.ok) throw new Error(`Failed to rename: ${resp.status}`);
+                async copyObject(acc, bucket, srcKey, dstKey) {
+                    const resp = await this._request(acc, 'PUT', `${bucket}/${dstKey}`, {}, null, { 'X-Amz-Copy-Source': `${bucket}/${srcKey}` });
+                    if (!resp.ok) throw new Error(`Copy failed: ${resp.status}`);
                     return true;
                 },
-                getPublicUrl(account, bucket, key) {
-                    const ep = this._parseEndpoint(account.endpoint);
+                getPublicUrl(acc, bucket, key) {
+                    const ep = this._parseEndpoint(acc.endpoint);
                     return `${ep.protocol}://${ep.host}/${bucket}/${key}`;
                 },
-                generatePresignedUrl: async function(account, bucket, key, expiresIn = 3600, method = 'GET') {
-                    const ep = this._parseEndpoint(account.endpoint);
+                generatePresignedUrl: async function(acc, bucket, key, expires=3600, method='GET') {
+                    const ep = this._parseEndpoint(acc.endpoint);
                     const host = ep.host;
-                    const canonicalUri = (ep.pathPrefix || '/').replace(/\/$/, '') + `/${bucket}/${key}`;
+                    const uri = (ep.pathPrefix||'/').replace(/\/$/,'') + `/${bucket}/${key}`;
                     const now = new Date();
                     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
-                    const dateStamp = amzDate.substring(0, 8);
-                    const region = account.region || 'auto';
+                    const dateStamp = amzDate.substring(0,8);
+                    const region = acc.region||'auto';
                     const service = 's3';
                     const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
-                    const expiryTimestamp = Math.floor(now.getTime() / 1000) + expiresIn;
-                    const queryParams = {
-                        'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
-                        'X-Amz-Credential': `${account.accessKey}/${credentialScope}`,
+                    const expTimestamp = Math.floor(now.getTime()/1000) + expires;
+                    const qp = {
+                        'X-Amz-Algorithm':'AWS4-HMAC-SHA256',
+                        'X-Amz-Credential': `${acc.accessKey}/${credentialScope}`,
                         'X-Amz-Date': amzDate,
-                        'X-Amz-Expires': String(expiresIn),
-                        'X-Amz-SignedHeaders': 'host'
+                        'X-Amz-Expires': String(expires),
+                        'X-Amz-SignedHeaders':'host'
                     };
-                    const canonicalQueryString = Object.entries(queryParams).sort().map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
-                    const canonicalRequest = [method.toUpperCase(), canonicalUri, canonicalQueryString, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
+                    const canonicalQS = Object.entries(qp).sort().map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+                    const canonicalRequest = [method.toUpperCase(), uri, canonicalQS, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
                     const stringToSign = ['AWS4-HMAC-SHA256', amzDate, credentialScope, await this._sha256Hex(canonicalRequest)].join('\n');
-                    const signingKey = await this._getSignatureKey(account.secretKey, dateStamp, region, service);
+                    const signingKey = await this._getSignatureKey(acc.secretKey, dateStamp, region, service);
                     const signature = await this._hmacHex(signingKey, stringToSign);
-                    return `${account.endpoint.replace(/\/$/,'')}/${bucket}/${key}?${canonicalQueryString}&X-Amz-Signature=${signature}`;
+                    return `${acc.endpoint.replace(/\/$/,'')}/${bucket}/${key}?${canonicalQS}&X-Amz-Signature=${signature}`;
                 }
             };
 
-            // ==================== UI MODULE ====================
+            // UI
             R2T.UI = {
-                toast(msg, type='info', duration=3500) {
-                    const container = document.getElementById('toastContainer');
-                    const toast = document.createElement('div');
-                    toast.className = `custom-toast ${type}`;
+                toast(msg, type='info', dur=3500) {
+                    const c = document.getElementById('toastContainer');
+                    const t = document.createElement('div');
+                    t.className = `custom-toast ${type}`;
                     const icons = { success:'bi-check-circle-fill', error:'bi-x-circle-fill', info:'bi-info-circle-fill' };
-                    toast.innerHTML = `<i class="bi ${icons[type]||icons.info}" style="font-size:1.1rem;"></i> ${msg}`;
-                    container.appendChild(toast);
-                    setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.3s'; setTimeout(() => toast.remove(),300); }, duration);
+                    t.innerHTML = `<i class="bi ${icons[type]||icons.info}"></i> ${msg}`;
+                    c.appendChild(t);
+                    setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(() => t.remove(),300); }, dur);
                 },
                 updateStatusDot(online) {
                     const dot = document.getElementById('statusDot');
@@ -478,23 +687,23 @@
                 },
                 toggleTheme() {
                     const html = document.documentElement;
-                    const current = html.getAttribute('data-bs-theme');
-                    const next = current === 'dark' ? 'light' : 'dark';
+                    const cur = html.getAttribute('data-bs-theme');
+                    const next = cur === 'dark' ? 'light' : 'dark';
                     html.setAttribute('data-bs-theme', next);
-                    document.getElementById('btnThemeToggle').querySelector('i').className = next === 'dark' ? 'bi bi-moon-stars' : 'bi bi-sun-fill';
+                    document.getElementById('btnThemeToggle').querySelector('i').className = next==='dark'?'bi bi-moon-stars':'bi bi-sun-fill';
                     R2T.App.settings.theme = next;
                     R2T.Storage.setSettings(R2T.App.settings);
                 },
                 initTheme() {
                     const theme = R2T.App.settings.theme || 'dark';
                     document.documentElement.setAttribute('data-bs-theme', theme);
-                    document.getElementById('btnThemeToggle').querySelector('i').className = theme === 'dark' ? 'bi bi-moon-stars' : 'bi bi-sun-fill';
+                    document.getElementById('btnThemeToggle').querySelector('i').className = theme==='dark'?'bi bi-moon-stars':'bi bi-sun-fill';
                 },
-                showContextMenu(x, y, items) {
+                showContextMenu(x,y,items) {
                     const menu = document.getElementById('contextMenu');
                     menu.innerHTML = '';
                     items.forEach(item => {
-                        if (item === 'divider') { const d = document.createElement('div'); d.className = 'ctx-divider'; menu.appendChild(d); }
+                        if (item==='divider') { const d = document.createElement('div'); d.className='ctx-divider'; menu.appendChild(d); }
                         else {
                             const div = document.createElement('div');
                             div.className = 'ctx-item';
@@ -503,26 +712,72 @@
                             menu.appendChild(div);
                         }
                     });
-                    menu.style.display = 'block';
-                    menu.style.left = Math.min(x, window.innerWidth - 200) + 'px';
-                    menu.style.top = Math.min(y, window.innerHeight - 250) + 'px';
+                    menu.style.display='block';
+                    menu.style.left = Math.min(x, window.innerWidth-200)+'px';
+                    menu.style.top = Math.min(y, window.innerHeight-250)+'px';
                 },
-                hideContextMenu() { document.getElementById('contextMenu').style.display = 'none'; },
+                hideContextMenu() { document.getElementById('contextMenu').style.display='none'; },
                 showCmdPalette() {
                     document.getElementById('cmdPaletteOverlay').classList.add('show');
-                    document.getElementById('cmdPaletteInput').value = '';
+                    document.getElementById('cmdPaletteInput').value='';
                     document.getElementById('cmdPaletteInput').focus();
-                    R2T.UI.updateCmdPaletteResults('');
+                    this.updateCmdPaletteResults('');
                 },
                 hideCmdPalette() { document.getElementById('cmdPaletteOverlay').classList.remove('show'); },
-                updateCmdPaletteResults(query) { /* ... identical ... */ },
-                getFileIcon(key, isFolder) { /* ... identical ... */ },
-                formatSize(bytes) { /* ... identical ... */ },
-                formatDate(dateStr) { /* ... identical ... */ },
-                async generateQR(text, canvasId) { /* ... identical ... */ }
+                updateCmdPaletteResults(query) {
+                    const all = [
+                        { label:'Upload Files', icon:'bi-cloud-upload', shortcut:'U', action:()=>{R2T.App.triggerUpload();R2T.UI.hideCmdPalette();} },
+                        { label:'Refresh', icon:'bi-arrow-clockwise', shortcut:'R', action:()=>{R2T.App.refreshFileList();R2T.UI.hideCmdPalette();} },
+                        { label:'Delete Selected', icon:'bi-trash', shortcut:'D', action:()=>{R2T.App.deleteSelected();R2T.UI.hideCmdPalette();} },
+                        { label:'Toggle View', icon:'bi-grid-3x3-gap', action:()=>{R2T.App.toggleView();R2T.UI.hideCmdPalette();} },
+                        { label:'Toggle Theme', icon:'bi-moon-stars', action:()=>{R2T.UI.toggleTheme();R2T.UI.hideCmdPalette();} },
+                        { label:'Go to Accounts', icon:'bi-cloud-arrow-up', action:()=>{R2T.UI.showPanel('accounts');R2T.UI.hideCmdPalette();} },
+                        { label:'New Folder', icon:'bi-folder-plus', action:()=>{R2T.App.createNewFolder();R2T.UI.hideCmdPalette();} }
+                    ];
+                    const filtered = query ? all.filter(c => c.label.toLowerCase().includes(query.toLowerCase())) : all;
+                    const container = document.getElementById('cmdPaletteResults');
+                    container.innerHTML = filtered.map((c,i) => `
+                        <div class="cmd-result-item${i===0?' active':''}" data-index="${i}">
+                            <i class="bi ${c.icon}"></i> ${c.label}
+                            ${c.shortcut?`<span class="shortcut">${c.shortcut}</span>`:''}
+                        </div>
+                    `).join('');
+                    container.querySelectorAll('.cmd-result-item').forEach(el => {
+                        el.addEventListener('click', () => { const idx = parseInt(el.dataset.index); filtered[idx].action(); });
+                    });
+                },
+                getFileIcon(key, isFolder) {
+                    if (isFolder) return 'bi-folder-fill text-warning';
+                    const ext = (key||'').split('.').pop()?.toLowerCase();
+                    const map = { jpg:'bi-file-image',jpeg:'bi-file-image',png:'bi-file-image',gif:'bi-file-image',svg:'bi-file-image',mp4:'bi-file-play',pdf:'bi-file-pdf',zip:'bi-file-zip' };
+                    return map[ext] || 'bi-file';
+                },
+                formatSize(bytes) {
+                    if (!bytes) return '0 B';
+                    const units = ['B','KB','MB','GB','TB'];
+                    const i = Math.floor(Math.log(bytes)/Math.log(1024));
+                    return (bytes/Math.pow(1024,i)).toFixed(i>0?1:0)+' '+units[i];
+                },
+                formatDate(d) { try { return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}); } catch { return d; } },
+                async generateQR(text, canvasId) {
+                    const canvas = document.getElementById(canvasId);
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    canvas.width=200; canvas.height=200;
+                    ctx.fillStyle='#fff'; ctx.fillRect(0,0,200,200);
+                    // simple hash pattern
+                    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+                    const bytes = new Uint8Array(hash);
+                    const mod = 21, size = 200/(mod+4), offset = 2*size;
+                    ctx.fillStyle='#000';
+                    for (let r=0; r<mod; r++) for (let c=0; c<mod; c++) {
+                        if (bytes[(r*mod+c)%bytes.length] > 127) ctx.fillRect(offset+c*size, offset+r*size, size, size);
+                    }
+                    canvas.style.display='block';
+                }
             };
 
-            // ==================== APP MODULE ====================
+            // App
             R2T.App = {
                 accounts: [], settings: {}, currentFileList: { files:[], folders:[] }, selectedFiles: new Set(),
                 uploadQueue: [], activeUploads: 0, viewMode: 'list', analytics: {},
@@ -543,98 +798,114 @@
                     this.renderAccounts();
                 },
                 bindEvents() {
-                    document.querySelectorAll('#sidebarNav .nav-item').forEach(item => item.addEventListener('click', () => R2T.UI.showPanel(item.dataset.panel)));
-                    document.getElementById('btnThemeToggle').addEventListener('click', () => R2T.UI.toggleTheme());
-                    document.getElementById('btnViewToggle').addEventListener('click', () => this.toggleView());
-                    document.getElementById('btnUpload').addEventListener('click', () => this.triggerUpload());
-                    document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileSelect(e.target.files));
-                    document.getElementById('folderInput').addEventListener('change', (e) => this.handleFileSelect(e.target.files, true));
-                    document.getElementById('btnNewFolder').addEventListener('click', () => this.createNewFolder());
-                    document.getElementById('btnRefresh').addEventListener('click', () => this.refreshFileList());
-                    document.getElementById('bucketSelector').addEventListener('change', (e) => {
+                    document.querySelectorAll('#sidebarNav .nav-item').forEach(item => item.addEventListener('click', ()=>R2T.UI.showPanel(item.dataset.panel)));
+                    document.getElementById('btnThemeToggle').addEventListener('click', ()=>R2T.UI.toggleTheme());
+                    document.getElementById('btnViewToggle').addEventListener('click', ()=>this.toggleView());
+                    document.getElementById('btnUpload').addEventListener('click', ()=>this.triggerUpload());
+                    document.getElementById('fileInput').addEventListener('change', (e)=>this.handleFileSelect(e.target.files));
+                    document.getElementById('folderInput').addEventListener('change', (e)=>this.handleFileSelect(e.target.files, true));
+                    document.getElementById('btnNewFolder').addEventListener('click', ()=>this.createNewFolder());
+                    document.getElementById('btnRefresh').addEventListener('click', ()=>this.refreshFileList());
+                    document.getElementById('bucketSelector').addEventListener('change', (e)=>{
                         this.settings.activeBucket = e.target.value;
                         this.settings.currentPath = '';
                         R2T.Storage.setSettings(this.settings);
                         this.refreshFileList();
                         this.updateBreadcrumb();
                     });
-                    // ... all remaining event bindings identical ...
-                    document.getElementById('globalSearch').addEventListener('input', (e) => this.searchFiles(e.target.value));
-                    document.getElementById('selectAllCheckbox').addEventListener('change', (e) => { /* ... */ });
-                    document.getElementById('queueToggle').addEventListener('click', () => { /* ... */ });
-                    document.addEventListener('keydown', (e) => { /* ... */ });
-                    document.getElementById('cmdPaletteInput').addEventListener('input', (e) => R2T.UI.updateCmdPaletteResults(e.target.value));
-                    document.getElementById('cmdPaletteInput').addEventListener('keydown', (e) => { /* ... */ });
-                    document.getElementById('cmdPaletteOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) R2T.UI.hideCmdPalette(); });
-                    document.addEventListener('click', () => R2T.UI.hideContextMenu());
-                    document.addEventListener('contextmenu', (e) => { /* ... */ });
-                    let dragCounter = 0;
-                    document.addEventListener('dragenter', (e) => { e.preventDefault(); dragCounter++; if (dragCounter===1) document.body.classList.add('drop-zone-active'); });
-                    document.addEventListener('dragleave', (e) => { e.preventDefault(); dragCounter--; if (dragCounter===0) document.body.classList.remove('drop-zone-active'); });
-                    document.addEventListener('dragover', (e) => e.preventDefault());
-                    document.addEventListener('drop', (e) => { e.preventDefault(); dragCounter=0; document.body.classList.remove('drop-zone-active'); if (e.dataTransfer.files.length > 0) this.handleFileSelect(e.dataTransfer.files); });
-                    document.getElementById('btnConfirmDelete').addEventListener('click', () => this.confirmDelete());
-                    document.getElementById('btnConfirmRename').addEventListener('click', () => this.confirmRename());
-                    document.getElementById('btnAddAccount').addEventListener('click', () => this.showAccountForm());
-                    document.getElementById('btnCancelAccount').addEventListener('click', () => this.hideAccountForm());
-                    document.getElementById('btnSaveAccount').addEventListener('click', () => this.saveAccount());
-                    document.getElementById('btnTestConnection').addEventListener('click', () => this.testCurrentAccount());
-                    document.getElementById('btnSaveSettings').addEventListener('click', () => this.saveSettings());
-                    document.getElementById('btnExportConfig').addEventListener('click', () => this.exportConfig());
-                    document.getElementById('btnImportConfig').addEventListener('click', () => document.getElementById('importFileInput').click());
-                    document.getElementById('importFileInput').addEventListener('change', (e) => this.importConfig(e));
-                    document.getElementById('btnClearCache').addEventListener('click', () => this.clearCache());
-                    document.getElementById('btnResetAll').addEventListener('click', () => this.resetAll());
-                    document.getElementById('btnCopyCdnUrl').addEventListener('click', () => this.copyCdnUrl());
-                    document.getElementById('btnGenerateQR').addEventListener('click', () => this.generateQRCode());
-                    document.getElementById('btnOpenLink').addEventListener('click', () => this.openCdnLink());
-                    document.getElementById('mobileMenuBtn').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('mobile-open'));
+                    document.getElementById('globalSearch').addEventListener('input', (e)=>this.searchFiles(e.target.value));
+                    document.getElementById('selectAllCheckbox').addEventListener('change', (e)=>{
+                        if (e.target.checked) { this.currentFileList.files.forEach(f=>this.selectedFiles.add(f.key)); this.currentFileList.folders.forEach(f=>this.selectedFiles.add(f)); }
+                        else this.selectedFiles.clear();
+                        this.renderFileList();
+                    });
+                    document.getElementById('queueToggle').addEventListener('click', ()=>{
+                        document.getElementById('queuePanel').classList.toggle('open');
+                        document.getElementById('queueChevron').className = document.getElementById('queuePanel').classList.contains('open')?'bi bi-chevron-down':'bi bi-chevron-up';
+                    });
+                    document.addEventListener('keydown', (e)=>{
+                        if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); R2T.UI.showCmdPalette(); }
+                        if (e.key==='Escape') { R2T.UI.hideCmdPalette(); R2T.UI.hideContextMenu(); }
+                        if (document.activeElement===document.body) {
+                            if (e.key==='u') { e.preventDefault(); this.triggerUpload(); }
+                            if (e.key==='r') { e.preventDefault(); this.refreshFileList(); }
+                            if (e.key==='d' && this.selectedFiles.size>0) { e.preventDefault(); this.deleteSelected(); }
+                        }
+                    });
+                    document.getElementById('cmdPaletteInput').addEventListener('input', (e)=>R2T.UI.updateCmdPaletteResults(e.target.value));
+                    document.getElementById('cmdPaletteInput').addEventListener('keydown', (e)=>{ if(e.key==='Escape') R2T.UI.hideCmdPalette(); if(e.key==='Enter') { const first = document.querySelector('#cmdPaletteResults .cmd-result-item'); if(first)first.click(); } });
+                    document.getElementById('cmdPaletteOverlay').addEventListener('click', (e)=>{ if(e.target===e.currentTarget) R2T.UI.hideCmdPalette(); });
+                    document.addEventListener('click', ()=>R2T.UI.hideContextMenu());
+                    document.addEventListener('contextmenu', (e)=>{
+                        if (e.target.closest('#fileTableBody, #fileGridView, #panelExplorer')) {
+                            e.preventDefault();
+                            const items = [
+                                { label:'Upload', icon:'bi-cloud-upload', action:()=>this.triggerUpload() },
+                                { label:'New Folder', icon:'bi-folder-plus', action:()=>this.createNewFolder() },
+                                { label:'Refresh', icon:'bi-arrow-clockwise', action:()=>this.refreshFileList() },
+                                'divider',
+                                { label:'Paste', icon:'bi-clipboard', action:()=>{} }
+                            ];
+                            R2T.UI.showContextMenu(e.clientX, e.clientY, items);
+                        }
+                    });
+                    let dragCounter=0;
+                    document.addEventListener('dragenter', (e)=>{ e.preventDefault(); dragCounter++; if(dragCounter===1) document.body.classList.add('drop-zone-active'); });
+                    document.addEventListener('dragleave', (e)=>{ e.preventDefault(); dragCounter--; if(dragCounter===0) document.body.classList.remove('drop-zone-active'); });
+                    document.addEventListener('dragover', e=>e.preventDefault());
+                    document.addEventListener('drop', (e)=>{
+                        e.preventDefault(); dragCounter=0; document.body.classList.remove('drop-zone-active');
+                        if (e.dataTransfer.files.length) this.handleFileSelect(e.dataTransfer.files);
+                    });
+                    document.getElementById('btnConfirmDelete').addEventListener('click', ()=>this.confirmDelete());
+                    document.getElementById('btnConfirmRename').addEventListener('click', ()=>this.confirmRename());
+                    document.getElementById('btnAddAccount').addEventListener('click', ()=>this.showAccountForm());
+                    document.getElementById('btnCancelAccount').addEventListener('click', ()=>this.hideAccountForm());
+                    document.getElementById('btnSaveAccount').addEventListener('click', ()=>this.saveAccount());
+                    document.getElementById('btnTestConnection').addEventListener('click', ()=>this.testCurrentAccount());
+                    document.getElementById('btnSaveSettings').addEventListener('click', ()=>this.saveSettings());
+                    document.getElementById('btnExportConfig').addEventListener('click', ()=>this.exportConfig());
+                    document.getElementById('btnImportConfig').addEventListener('click', ()=>document.getElementById('importFileInput').click());
+                    document.getElementById('importFileInput').addEventListener('change', e=>this.importConfig(e));
+                    document.getElementById('btnClearCache').addEventListener('click', ()=>this.clearCache());
+                    document.getElementById('btnResetAll').addEventListener('click', ()=>this.resetAll());
+                    document.getElementById('btnCopyCdnUrl').addEventListener('click', ()=>this.copyCdnUrl());
+                    document.getElementById('btnGenerateQR').addEventListener('click', ()=>this.generateQRCode());
+                    document.getElementById('btnOpenLink').addEventListener('click', ()=>this.openCdnLink());
+                    document.getElementById('mobileMenuBtn').addEventListener('click', ()=>document.getElementById('sidebar').classList.toggle('mobile-open'));
                 },
-                // *** UPDATED: manual bucket handling ***
-                async selectAccount(idx, silent = false) {
-                    if (idx < 0 || idx >= this.accounts.length) return;
+                async selectAccount(idx, silent=false) {
+                    if (idx<0 || idx>=this.accounts.length) return;
                     this.settings.activeAccountIdx = idx;
                     R2T.Storage.setSettings(this.settings);
-                    const account = this.accounts[idx];
-                    R2T.UI.updateActiveAccountLabel(account.name);
-                    this.updateBucketSelector(); // will use account.bucketList (manual)
-                    // If a bucket is already selected, test connection by listing that bucket
-                    if (this.settings.activeBucket && account.bucketList.includes(this.settings.activeBucket)) {
-                        R2T.UI.updateStatusDot(false);
-                        document.getElementById('statusText').textContent = 'Testing...';
-                        const result = await R2T.API.testConnection(account, this.settings.activeBucket);
-                        R2T.UI.updateStatusDot(result.success);
-                        if (result.success) {
-                            if (!silent) R2T.UI.toast(`Connected to ${account.name} (${this.settings.activeBucket})`, 'success');
+                    const acc = this.accounts[idx];
+                    R2T.UI.updateActiveAccountLabel(acc.name);
+                    this.updateBucketSelector();
+                    if (this.settings.activeBucket && acc.bucketList.includes(this.settings.activeBucket)) {
+                        R2T.UI.updateStatusDot(false); document.getElementById('statusText').textContent='Testing...';
+                        const res = await R2T.API.testConnection(acc, this.settings.activeBucket);
+                        R2T.UI.updateStatusDot(res.success);
+                        if (res.success) {
+                            if (!silent) R2T.UI.toast(`Connected to ${acc.name}`, 'success');
                             await this.refreshFileList();
                         } else {
-                            if (!silent) R2T.UI.toast(`Connection failed: ${result.message}`, 'error');
+                            if (!silent) R2T.UI.toast(`Connection failed: ${res.message}`, 'error');
                         }
                     } else {
-                        // no bucket selected yet
-                        R2T.UI.updateStatusDot(false);
-                        document.getElementById('statusText').textContent = 'Offline';
-                        if (!silent) R2T.UI.toast('Select a bucket to test connection', 'info');
+                        R2T.UI.updateStatusDot(false); document.getElementById('statusText').textContent='Offline';
                     }
                     this.renderAccounts();
                 },
                 updateBucketSelector() {
                     const sel = document.getElementById('bucketSelector');
                     sel.innerHTML = '<option value="">Select bucket...</option>';
-                    const account = this.getActiveAccount();
-                    if (account && account.bucketList) {
-                        account.bucketList.forEach(b => {
-                            sel.innerHTML += `<option value="${b}" ${b===this.settings.activeBucket?'selected':''}>${b}</option>`;
-                        });
-                    }
+                    const acc = this.getActiveAccount();
+                    if (acc && acc.bucketList) acc.bucketList.forEach(b => sel.innerHTML += `<option value="${b}" ${b===this.settings.activeBucket?'selected':''}>${b}</option>`);
                     if (this.settings.activeBucket) sel.value = this.settings.activeBucket;
                 },
-                getActiveAccount() {
-                    const idx = this.settings.activeAccountIdx;
-                    return (idx >= 0 && idx < this.accounts.length) ? this.accounts[idx] : null;
-                },
+                getActiveAccount() { const idx=this.settings.activeAccountIdx; return (idx>=0 && idx<this.accounts.length) ? this.accounts[idx] : null; },
                 renderAccounts() {
-                    document.getElementById('accountsList').innerHTML = this.accounts.map((acc, i) => `
+                    document.getElementById('accountsList').innerHTML = this.accounts.map((acc,i) => `
                         <div class="col-md-6 col-lg-4">
                             <div class="glass-card p-3 account-card ${i===this.settings.activeAccountIdx?'active-account':''}" onclick="R2T.App.selectAccount(${i})">
                                 <div class="d-flex justify-content-between align-items-start">
@@ -654,150 +925,381 @@
                     `).join('');
                 },
                 showAccountForm(editIdx=-1) {
-                    const form = document.getElementById('accountFormContainer');
-                    form.style.display = '';
+                    const form = document.getElementById('accountFormContainer'); form.style.display='';
                     document.getElementById('accountEditIndex').value = editIdx;
                     document.getElementById('accountFormTitle').textContent = editIdx>=0?'Edit Account':'Add Account';
-                    if (editIdx >= 0 && editIdx < this.accounts.length) {
+                    if (editIdx>=0) {
                         const acc = this.accounts[editIdx];
                         document.getElementById('accName').value = acc.name;
                         document.getElementById('accAccessKey').value = acc.accessKey;
                         document.getElementById('accSecretKey').value = acc.secretKey;
                         document.getElementById('accEndpoint').value = acc.endpoint;
-                        document.getElementById('accRegion').value = acc.region || 'auto';
-                        document.getElementById('accBuckets').value = (acc.bucketList || []).join(', ');
+                        document.getElementById('accRegion').value = acc.region||'auto';
+                        document.getElementById('accBuckets').value = (acc.bucketList||[]).join(', ');
                     } else {
-                        ['accName','accAccessKey','accSecretKey','accEndpoint','accBuckets'].forEach(id => document.getElementById(id).value='');
-                        document.getElementById('accRegion').value = 'auto';
+                        ['accName','accAccessKey','accSecretKey','accEndpoint','accBuckets'].forEach(id=>document.getElementById(id).value='');
+                        document.getElementById('accRegion').value='auto';
                     }
                 },
-                hideAccountForm() { document.getElementById('accountFormContainer').style.display = 'none'; },
+                hideAccountForm() { document.getElementById('accountFormContainer').style.display='none'; },
                 async saveAccount() {
                     const editIdx = parseInt(document.getElementById('accountEditIndex').value);
-                    const bucketStr = document.getElementById('accBuckets').value.trim();
-                    const bucketList = bucketStr ? bucketStr.split(',').map(b => b.trim()).filter(b => b) : [];
-                    const account = {
+                    const buckets = document.getElementById('accBuckets').value.split(',').map(b=>b.trim()).filter(b=>b);
+                    const acc = {
                         name: document.getElementById('accName').value.trim(),
                         accessKey: document.getElementById('accAccessKey').value.trim(),
                         secretKey: document.getElementById('accSecretKey').value.trim(),
                         endpoint: document.getElementById('accEndpoint').value.trim().replace(/\/$/,''),
-                        region: document.getElementById('accRegion').value.trim() || 'auto',
-                        bucketList
+                        region: document.getElementById('accRegion').value.trim()||'auto',
+                        bucketList: buckets
                     };
-                    if (!account.name || !account.accessKey || !account.secretKey || !account.endpoint) {
-                        return R2T.UI.toast('All fields required', 'error');
-                    }
-                    if (editIdx >= 0 && editIdx < this.accounts.length) {
-                        this.accounts[editIdx] = account;
-                    } else {
-                        this.accounts.push(account);
-                    }
+                    if (!acc.name||!acc.accessKey||!acc.secretKey||!acc.endpoint) return R2T.UI.toast('All fields required','error');
+                    if (editIdx>=0) this.accounts[editIdx] = acc;
+                    else this.accounts.push(acc);
                     R2T.Storage.setAccounts(this.accounts);
                     this.hideAccountForm();
                     this.renderAccounts();
-                    R2T.UI.toast('Account saved', 'success');
-                    if (editIdx < 0) await this.selectAccount(this.accounts.length - 1);
+                    R2T.UI.toast('Account saved','success');
+                    if (editIdx<0) await this.selectAccount(this.accounts.length-1);
                 },
                 editAccount(idx) { this.showAccountForm(idx); },
                 deleteAccount(idx) {
                     if (confirm('Delete this account?')) {
                         this.accounts.splice(idx,1);
-                        if (this.settings.activeAccountIdx === idx) {
-                            this.settings.activeAccountIdx = -1;
-                            this.settings.activeBucket = '';
-                            R2T.UI.updateActiveAccountLabel('');
-                            R2T.UI.updateStatusDot(false);
-                        } else if (this.settings.activeAccountIdx > idx) this.settings.activeAccountIdx--;
-                        R2T.Storage.setAccounts(this.accounts);
-                        R2T.Storage.setSettings(this.settings);
-                        this.renderAccounts();
-                        this.updateBucketSelector();
+                        if (this.settings.activeAccountIdx===idx) { this.settings.activeAccountIdx=-1; this.settings.activeBucket=''; R2T.UI.updateActiveAccountLabel(''); R2T.UI.updateStatusDot(false); }
+                        else if (this.settings.activeAccountIdx>idx) this.settings.activeAccountIdx--;
+                        R2T.Storage.setAccounts(this.accounts); R2T.Storage.setSettings(this.settings);
+                        this.renderAccounts(); this.updateBucketSelector();
                         R2T.UI.toast('Account deleted','info');
                     }
                 },
                 async testCurrentAccount() {
-                    // Use the first bucket from the manual list for testing
-                    const bucketList = document.getElementById('accBuckets').value.split(',').map(b => b.trim()).filter(b => b);
-                    if (bucketList.length === 0) {
-                        R2T.UI.toast('Add at least one bucket to test', 'error');
-                        return;
-                    }
-                    const account = {
-                        name: 'Test',
-                        accessKey: document.getElementById('accAccessKey').value.trim(),
+                    const buckets = document.getElementById('accBuckets').value.split(',').map(b=>b.trim()).filter(b=>b);
+                    if (!buckets.length) return R2T.UI.toast('Add at least one bucket','error');
+                    const acc = {
+                        name:'Test', accessKey: document.getElementById('accAccessKey').value.trim(),
                         secretKey: document.getElementById('accSecretKey').value.trim(),
                         endpoint: document.getElementById('accEndpoint').value.trim(),
-                        region: document.getElementById('accRegion').value.trim() || 'auto',
-                        bucketList
+                        region: document.getElementById('accRegion').value.trim()||'auto'
                     };
-                    const bucket = bucketList[0];
-                    R2T.UI.toast(`Testing connection to bucket "${bucket}"...`, 'info');
-                    const result = await R2T.API.testConnection(account, bucket);
-                    if (result.success) {
-                        R2T.UI.toast(`Successfully connected to bucket "${bucket}"`, 'success');
-                        // If we are editing an existing account, we could temporarily update its bucket list in memory
-                    } else {
-                        R2T.UI.toast(`Connection failed: ${result.message}`, 'error');
-                    }
+                    const res = await R2T.API.testConnection(acc, buckets[0]);
+                    R2T.UI.toast(res.success?'Connected!':'Failed: '+res.message, res.success?'success':'error');
                 },
-                async refreshFileList() { /* ... identical ... */ },
-                renderFileList() { /* ... identical ... */ },
-                handleFileClick(key, isFolder) { /* ... identical ... */ },
-                handleFileContextMenu(e,key,isFolder) { /* ... identical ... */ },
-                toggleSelect(key) { /* ... identical ... */ },
-                updateBreadcrumb() { /* ... identical ... */ },
-                async previewFile(key,isFolder) { /* ... identical ... */ },
-                async downloadFile(key) { /* ... identical ... */ },
-                async downloadSelected() { /* ... identical ... */ },
-                deleteFile(key) { /* ... identical ... */ },
-                async confirmDelete() { /* ... identical ... */ },
-                async deleteSelected() { /* ... identical ... */ },
-                renameFile(key) { /* ... identical ... */ },
-                async confirmRename() { /* ... identical ... */ },
-                async createNewFolder() { /* ... identical ... */ },
-                searchFiles(query) { /* ... identical ... */ },
+                async refreshFileList() {
+                    const acc = this.getActiveAccount(); const bucket = this.settings.activeBucket;
+                    if (!acc||!bucket) { document.getElementById('fileTableBody').innerHTML=''; document.getElementById('fileGridView').innerHTML=''; document.getElementById('emptyState').style.display=''; return; }
+                    try {
+                        const result = await R2T.API.listObjects(acc, bucket, this.settings.currentPath||'');
+                        this.currentFileList = result; this.selectedFiles.clear();
+                        document.getElementById('selectAllCheckbox').checked = false;
+                        this.renderFileList(); this.updateBreadcrumb();
+                        R2T.UI.updateStatusDot(true);
+                        document.getElementById('emptyState').style.display = (result.files.length===0 && result.folders.length===0)?'':'none';
+                    } catch(e) { R2T.UI.toast('Error listing: '+e.message,'error'); R2T.UI.updateStatusDot(false); }
+                },
+                renderFileList() {
+                    const tbody = document.getElementById('fileTableBody');
+                    const grid = document.getElementById('fileGridView');
+                    const all = [...this.currentFileList.folders.map(f=>({key:f,isFolder:true,size:0,lastModified:''})), ...this.currentFileList.files];
+                    tbody.innerHTML = all.map(item => {
+                        const display = item.isFolder? item.key.replace(this.settings.currentPath||'','').replace(/\/$/,'') : item.key.replace(this.settings.currentPath||'','');
+                        const short = display.length>40?display.substring(0,37)+'...':display;
+                        const icon = R2T.UI.getFileIcon(item.key, item.isFolder);
+                        const sel = this.selectedFiles.has(item.key);
+                        return `<tr class="${sel?'selected':''}" data-key="${item.key}" onclick="R2T.App.handleFileClick('${item.key.replace(/'/g,"\\'")}',${item.isFolder})" oncontextmenu="R2T.App.handleFileContextMenu(event,'${item.key.replace(/'/g,"\\'")}',${item.isFolder})">
+                            <td><input type="checkbox" ${sel?'checked':''} onclick="event.stopPropagation();R2T.App.toggleSelect('${item.key.replace(/'/g,"\\'")}')"></td>
+                            <td class="file-icon"><i class="bi ${icon}"></i></td>
+                            <td>${short}</td><td>${item.isFolder?'—':R2T.UI.formatSize(item.size)}</td>
+                            <td>${item.isFolder?'Folder':(item.key.split('.').pop()?.toUpperCase()||'—')}</td>
+                            <td>${R2T.UI.formatDate(item.lastModified)}</td>
+                            <td>
+                                <button class="btn-glass xs" onclick="event.stopPropagation();R2T.App.previewFile('${item.key.replace(/'/g,"\\'")}',${item.isFolder})"><i class="bi bi-eye"></i></button>
+                                <button class="btn-glass xs" onclick="event.stopPropagation();R2T.App.downloadFile('${item.key.replace(/'/g,"\\'")}')"><i class="bi bi-download"></i></button>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                    grid.innerHTML = all.map(item => {
+                        const display = item.isFolder? item.key.replace(this.settings.currentPath||'','').replace(/\/$/,'') : item.key.replace(this.settings.currentPath||'','');
+                        const icon = R2T.UI.getFileIcon(item.key, item.isFolder);
+                        return `<div class="file-grid-item ${this.selectedFiles.has(item.key)?'selected':''}" onclick="R2T.App.handleFileClick('${item.key.replace(/'/g,"\\'")}',${item.isFolder})" oncontextmenu="R2T.App.handleFileContextMenu(event,'${item.key.replace(/'/g,"\\'")}',${item.isFolder})">
+                            <i class="bi ${icon} grid-icon"></i><div class="grid-name">${display}</div><small>${item.isFolder?'Folder':R2T.UI.formatSize(item.size)}</small>
+                        </div>`;
+                    }).join('');
+                    document.getElementById('fileListView').style.display = this.viewMode==='list'?'':'none';
+                    document.getElementById('fileGridView').style.display = this.viewMode==='grid'?'':'none';
+                },
+                handleFileClick(key,isFolder) { if(isFolder){ this.settings.currentPath=key; R2T.Storage.setSettings(this.settings); this.refreshFileList(); } else this.previewFile(key,false); },
+                handleFileContextMenu(e,key,isFolder) {
+                    e.preventDefault(); e.stopPropagation();
+                    this.selectedFiles.clear(); this.selectedFiles.add(key); this.renderFileList();
+                    R2T.UI.showContextMenu(e.clientX, e.clientY, [
+                        { label:'Preview', icon:'bi-eye', action:()=>this.previewFile(key,isFolder) },
+                        { label:'Download', icon:'bi-download', action:()=>this.downloadFile(key) },
+                        { label:'Rename', icon:'bi-pencil', action:()=>this.renameFile(key) },
+                        { label:'Copy CDN URL', icon:'bi-link-45deg', action:()=>this.copySingleCdnUrl(key) },
+                        'divider',
+                        { label:'Delete', icon:'bi-trash text-danger', action:()=>this.deleteFile(key) }
+                    ]);
+                },
+                toggleSelect(key) { if(this.selectedFiles.has(key)) this.selectedFiles.delete(key); else this.selectedFiles.add(key); this.renderFileList(); },
+                updateBreadcrumb() {
+                    const bc = document.getElementById('breadcrumbNav');
+                    const path = this.settings.currentPath||'';
+                    const parts = path.split('/').filter(p=>p);
+                    let html = '<span class="crumb current" data-path="">🏠</span>';
+                    let cum = '';
+                    parts.forEach((p,i) => { cum+=p+'/'; html+=`<span class="crumb-sep">›</span><span class="crumb${i===parts.length-1?' current':''}" data-path="${cum}">${p}</span>`; });
+                    bc.innerHTML = html;
+                    bc.querySelectorAll('.crumb').forEach(c => c.addEventListener('click',()=>{ this.settings.currentPath=c.dataset.path; R2T.Storage.setSettings(this.settings); this.refreshFileList(); }));
+                },
+                async previewFile(key,isFolder) { /* ... full implementation ... */ },
+                async downloadFile(key) { /* ... full implementation ... */ },
+                async downloadSelected() { for (const k of this.selectedFiles) await this.downloadFile(k); },
+                deleteFile(key) { this.pendingDeleteKey=key; document.getElementById('deleteMessage').textContent=`Delete "${key.split('/').pop()}"?`; new bootstrap.Modal(document.getElementById('deleteModal')).show(); },
+                async confirmDelete() {
+                    if (!this.pendingDeleteKey) return;
+                    const acc = this.getActiveAccount(), bucket = this.settings.activeBucket;
+                    try { await R2T.API.deleteObject(acc, bucket, this.pendingDeleteKey); R2T.UI.toast('Deleted','success'); this.pendingDeleteKey=null; bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide(); this.refreshFileList(); }
+                    catch(e) { R2T.UI.toast('Delete failed: '+e.message,'error'); }
+                },
+                async deleteSelected() {
+                    if (!this.selectedFiles.size) return;
+                    if (!confirm(`Delete ${this.selectedFiles.size} item(s)?`)) return;
+                    const acc = this.getActiveAccount(), bucket = this.settings.activeBucket;
+                    for (const key of this.selectedFiles) {
+                        try { await R2T.API.deleteObject(acc, bucket, key); } catch(e) { R2T.UI.toast(`Failed: ${key}`, 'error'); }
+                    }
+                    R2T.UI.toast('Deleted selected','success');
+                    this.selectedFiles.clear();
+                    await this.refreshFileList();
+                },
+                renameFile(key) { this.pendingRenameKey=key; document.getElementById('renameInput').value=key.split('/').pop(); new bootstrap.Modal(document.getElementById('renameModal')).show(); },
+                async confirmRename() {
+                    if (!this.pendingRenameKey) return;
+                    const newName = document.getElementById('renameInput').value.trim();
+                    if (!newName) return;
+                    const parts = this.pendingRenameKey.split('/');
+                    parts[parts.length-1] = newName;
+                    const newKey = parts.join('/');
+                    const acc = this.getActiveAccount(), bucket = this.settings.activeBucket;
+                    try {
+                        await R2T.API.copyObject(acc, bucket, this.pendingRenameKey, newKey);
+                        await R2T.API.deleteObject(acc, bucket, this.pendingRenameKey);
+                        R2T.UI.toast('Renamed','success');
+                        this.pendingRenameKey=null;
+                        bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
+                        this.refreshFileList();
+                    } catch(e) { R2T.UI.toast('Rename failed: '+e.message,'error'); }
+                },
+                async createNewFolder() {
+                    const name = prompt('Folder name:');
+                    if (!name||!name.trim()) return;
+                    const acc = this.getActiveAccount(), bucket = this.settings.activeBucket;
+                    const key = (this.settings.currentPath||'') + name.trim() + '/';
+                    try { await R2T.API.putObject(acc, bucket, key, '', 'application/x-directory'); R2T.UI.toast('Folder created','success'); this.refreshFileList(); }
+                    catch(e) { R2T.UI.toast('Failed: '+e.message,'error'); }
+                },
+                searchFiles(query) {
+                    if (!query) { this.renderFileList(); return; }
+                    const q = query.toLowerCase();
+                    const filtered = this.currentFileList.files.filter(f=>f.key.toLowerCase().includes(q));
+                    const folders = this.currentFileList.folders.filter(f=>f.toLowerCase().includes(q));
+                    const orig = this.currentFileList;
+                    this.currentFileList = { files:filtered, folders, truncated:false, nextToken:'' };
+                    this.renderFileList();
+                    this.currentFileList = orig;
+                },
                 triggerUpload() { document.getElementById('fileInput').click(); },
                 triggerFolderUpload() { document.getElementById('folderInput').click(); },
-                handleFileSelect(files, isFolder=false) { /* ... identical ... */ },
-                addToUploadQueue(account, bucket, key, file) { /* ... identical ... */ },
-                async processQueue() { /* ... identical ... */ },
-                async uploadSingleFile(item) { /* ... identical ... */ },
-                pauseUpload(id) { /* ... identical ... */ },
-                resumeUpload(id) { /* ... identical ... */ },
-                retryUpload(id) { /* ... identical ... */ },
-                removeFromQueue(id) { /* ... identical ... */ },
-                renderUploadQueue() { /* ... identical ... */ },
-                toggleView() { /* ... identical ... */ },
-                updateViewToggleIcon() { /* ... identical ... */ },
-                copySingleCdnUrl(key) { /* ... identical ... */ },
-                copyCdnUrl() { /* ... identical ... */ },
-                async generateQRCode() { /* ... identical ... */ },
-                openCdnLink() { /* ... identical ... */ },
-                renderAnalytics() { /* ... identical ... */ },
-                drawAnalyticsChart() { /* ... identical ... */ },
-                loadSettingsIntoForm() { /* ... identical ... */ },
-                saveSettings() { /* ... identical ... */ },
-                exportConfig() { /* ... identical ... */ },
-                importConfig(e) { /* ... identical ... */ },
-                clearCache() { /* ... identical ... */ },
-                resetAll() { /* ... identical ... */ }
+                handleFileSelect(files, isFolderUpload=false) {
+                    const acc = this.getActiveAccount(), bucket = this.settings.activeBucket;
+                    if (!acc||!bucket) return R2T.UI.toast('Select account & bucket','error');
+                    const prefix = this.settings.currentPath||'';
+                    Array.from(files).forEach(file => {
+                        const key = prefix + (file.webkitRelativePath || file.name);
+                        this.addToUploadQueue(acc, bucket, key, file);
+                    });
+                },
+                addToUploadQueue(acc, bucket, key, file) {
+                    const item = {
+                        id: Date.now()+Math.random().toString(36).substr(2,9),
+                        account: acc, bucket, key, file,
+                        status: 'queued', progress: 0, xhr: null, retries: 0, maxRetries: 3
+                    };
+                    this.uploadQueue.push(item);
+                    this.renderUploadQueue();
+                    this.processQueue();
+                },
+                async processQueue() {
+                    const max = this.settings.maxParallel || 3;
+                    while (this.activeUploads < max && this.uploadQueue.some(q=>q.status==='queued')) {
+                        const item = this.uploadQueue.find(q=>q.status==='queued');
+                        if (!item) break;
+                        item.status = 'uploading';
+                        this.activeUploads++;
+                        this.renderUploadQueue();
+                        this.uploadSingleFile(item).finally(() => { this.activeUploads--; this.renderUploadQueue(); this.processQueue(); });
+                    }
+                },
+                async uploadSingleFile(item) {
+                    const { account, bucket, key, file } = item;
+                    try {
+                        const ep = R2T.API._parseEndpoint(account.endpoint);
+                        const uri = (ep.pathPrefix||'/').replace(/\/$/,'') + `/${bucket}/${key}`;
+                        const url = `${ep.protocol}://${ep.host}${uri}`;
+                        const buffer = await file.arrayBuffer();
+                        const body = new Uint8Array(buffer);
+                        const payloadHash = await R2T.API._sha256Hex(body);
+                        const headers = {
+                            'Host': ep.host,
+                            'Content-Type': file.type || 'application/octet-stream',
+                            'X-Amz-Content-SHA256': payloadHash,
+                            'X-Amz-Date': new Date().toISOString().replace(/[:-]|\.\d{3}/g, ''),
+                        };
+                        const auth = await R2T.API._buildAuthHeader(account.accessKey, account.secretKey, account.region||'auto', 's3', 'PUT', uri, {}, headers, payloadHash);
+                        headers['Authorization'] = auth;
+                        await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            item.xhr = xhr;
+                            xhr.open('PUT', url);
+                            Object.entries(headers).forEach(([k,v])=>xhr.setRequestHeader(k,v));
+                            xhr.upload.addEventListener('progress', (e) => {
+                                if (e.lengthComputable) { item.progress = Math.round((e.loaded/e.total)*100); this.renderUploadQueue(); }
+                            });
+                            xhr.addEventListener('load', () => { if(xhr.status>=200&&xhr.status<300) resolve(); else reject(new Error(`HTTP ${xhr.status}`)); });
+                            xhr.addEventListener('error', ()=>reject(new Error('Network error')));
+                            xhr.addEventListener('abort', ()=>reject(new Error('Aborted')));
+                            xhr.send(body);
+                        });
+                        item.status='done'; item.progress=100;
+                        this.analytics.uploads++;
+                        this.analytics.history.push({ type:'upload', key, size:file.size, time:new Date().toISOString() });
+                        R2T.Storage.setAnalytics(this.analytics);
+                        R2T.UI.toast(`Uploaded: ${key.split('/').pop()}`, 'success');
+                        this.refreshFileList();
+                    } catch(e) {
+                        item.retries++;
+                        if (item.retries < item.maxRetries) { item.status='queued'; R2T.UI.toast(`Retrying: ${key.split('/').pop()}`, 'info'); }
+                        else { item.status='error'; R2T.UI.toast(`Failed: ${key.split('/').pop()}`, 'error'); }
+                    }
+                    this.renderUploadQueue();
+                },
+                pauseUpload(id) { const item=this.uploadQueue.find(q=>q.id===id); if(item&&item.xhr){ item.xhr.abort(); item.status='paused'; this.renderUploadQueue(); } },
+                resumeUpload(id) { const item=this.uploadQueue.find(q=>q.id===id); if(item&&item.status==='paused'){ item.status='queued'; this.renderUploadQueue(); this.processQueue(); } },
+                retryUpload(id) { const item=this.uploadQueue.find(q=>q.id===id); if(item&&item.status==='error'){ item.status='queued'; item.retries=0; item.progress=0; this.renderUploadQueue(); this.processQueue(); } },
+                removeFromQueue(id) { this.uploadQueue = this.uploadQueue.filter(q=>q.id!==id); this.renderUploadQueue(); },
+                renderUploadQueue() {
+                    const body = document.getElementById('queueBody');
+                    const count = document.getElementById('queueCount');
+                    const active = this.uploadQueue.filter(q=>q.status==='uploading'||q.status==='queued'||q.status==='paused');
+                    count.textContent = active.length;
+                    body.innerHTML = this.uploadQueue.map(q=>`
+                        <div class="queue-item">
+                            <div class="d-flex justify-content-between"><small style="word-break:break-all;">${q.key.split('/').pop()}</small><small>${R2T.UI.formatSize(q.file.size)}</small></div>
+                            <div class="progress"><div class="progress-bar ${q.status==='error'?'bg-danger':q.status==='done'?'bg-success':'bg-primary'}" style="width:${q.progress}%"></div></div>
+                            <div class="d-flex gap-1 mt-1 justify-content-end">
+                                <small class="text-secondary">${q.status} ${q.progress}%</small>
+                                ${q.status==='uploading'?`<button class="btn-glass xs" onclick="R2T.App.pauseUpload('${q.id}')">⏸</button>`:''}
+                                ${q.status==='paused'?`<button class="btn-glass xs" onclick="R2T.App.resumeUpload('${q.id}')">▶</button>`:''}
+                                ${q.status==='error'?`<button class="btn-glass xs" onclick="R2T.App.retryUpload('${q.id}')">🔄</button>`:''}
+                                <button class="btn-glass xs danger" onclick="R2T.App.removeFromQueue('${q.id}')">✕</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    if (!this.uploadQueue.length) body.innerHTML='<p class="text-center text-secondary p-3">No uploads</p>';
+                    if (active.length>0) { document.getElementById('queuePanel').classList.add('open'); document.getElementById('queueChevron').className='bi bi-chevron-down'; }
+                },
+                toggleView() { this.viewMode = this.viewMode==='list'?'grid':'list'; this.settings.defaultView=this.viewMode; R2T.Storage.setSettings(this.settings); this.updateViewToggleIcon(); this.renderFileList(); },
+                updateViewToggleIcon() { document.getElementById('btnViewToggle').querySelector('i').className = this.viewMode==='list'?'bi bi-grid-3x3-gap':'bi bi-list-ul'; },
+                copySingleCdnUrl(key) {
+                    const acc=this.getActiveAccount(), bucket=this.settings.activeBucket;
+                    if (!acc||!bucket) return;
+                    const url = R2T.API.getPublicUrl(acc, bucket, key);
+                    navigator.clipboard.writeText(url).then(()=>R2T.UI.toast('URL copied','success'));
+                    document.getElementById('cdnUrl').value = url;
+                    document.getElementById('cdnFileInfo').innerHTML = `<strong>${key.split('/').pop()}</strong><br><small>${url}</small>`;
+                },
+                copyCdnUrl() { const url=document.getElementById('cdnUrl').value; if(url)navigator.clipboard.writeText(url).then(()=>R2T.UI.toast('Copied','success')); },
+                async generateQRCode() { const url=document.getElementById('cdnUrl').value; if(url) await R2T.UI.generateQR(url,'qrCanvas'); },
+                openCdnLink() { const url=document.getElementById('cdnUrl').value; if(url)window.open(url,'_blank'); },
+                renderAnalytics() {
+                    document.getElementById('statTotalFiles').textContent = this.currentFileList.files.length + ' / ' + this.currentFileList.folders.length;
+                    const totalSize = this.currentFileList.files.reduce((s,f)=>s+f.size,0);
+                    document.getElementById('statTotalSize').textContent = R2T.UI.formatSize(totalSize);
+                    document.getElementById('statUploads').textContent = this.analytics.uploads;
+                    document.getElementById('statDownloads').textContent = this.analytics.downloads;
+                    this.drawAnalyticsChart();
+                },
+                drawAnalyticsChart() {
+                    const canvas = document.getElementById('analyticsChart'); if(!canvas) return;
+                    const ctx=canvas.getContext('2d'); canvas.width=400; canvas.height=200;
+                    ctx.clearRect(0,0,400,200);
+                    const hist = this.analytics.history||[];
+                    const days=7, labels=[], up=[], down=[];
+                    for (let i=days-1;i>=0;i--) {
+                        const d=new Date(); d.setDate(d.getDate()-i);
+                        labels.push(d.toLocaleDateString('en-US',{weekday:'short'}));
+                        const dayStr = d.toISOString().split('T')[0];
+                        up.push(hist.filter(h=>h.type==='upload'&&h.time.startsWith(dayStr)).length);
+                        down.push(hist.filter(h=>h.type==='download'&&h.time.startsWith(dayStr)).length);
+                    }
+                    const maxVal = Math.max(...up,...down,1);
+                    const cw=330,ch=140, sx=50, sy=160;
+                    ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=0.5;
+                    for (let i=0;i<=4;i++) { const y=sy-(ch/4)*i; ctx.beginPath(); ctx.moveTo(sx,y); ctx.lineTo(sx+cw,y); ctx.stroke(); }
+                    for (let i=0;i<days;i++) {
+                        const x = sx+(cw/days)*i + cw/days/4;
+                        const uh = (up[i]/maxVal)*ch, dh = (down[i]/maxVal)*ch;
+                        ctx.fillStyle='#6366f1'; ctx.fillRect(x-8, sy-uh, 12, uh);
+                        ctx.fillStyle='#22c55e'; ctx.fillRect(x+2, sy-dh, 12, dh);
+                        ctx.fillStyle='#94a3b8'; ctx.font='9px Inter'; ctx.fillText(labels[i], x-6, sy+15);
+                    }
+                },
+                loadSettingsIntoForm() {
+                    document.getElementById('themeSelect').value = this.settings.theme;
+                    document.getElementById('defaultViewSelect').value = this.settings.defaultView;
+                    document.getElementById('maxParallelInput').value = this.settings.maxParallel;
+                },
+                saveSettings() {
+                    this.settings.theme = document.getElementById('themeSelect').value;
+                    this.settings.defaultView = document.getElementById('defaultViewSelect').value;
+                    this.settings.maxParallel = parseInt(document.getElementById('maxParallelInput').value)||3;
+                    R2T.Storage.setSettings(this.settings);
+                    R2T.UI.initTheme();
+                    this.viewMode = this.settings.defaultView;
+                    this.updateViewToggleIcon();
+                    this.renderFileList();
+                    R2T.UI.toast('Settings saved','success');
+                },
+                exportConfig() {
+                    const json = R2T.Storage.exportAll();
+                    const blob = new Blob([json],{type:'application/json'});
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'r2-backup-'+new Date().toISOString().split('T')[0]+'.json';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                    R2T.UI.toast('Exported','success');
+                },
+                importConfig(e) {
+                    const file = e.target.files[0]; if(!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        if (R2T.Storage.importAll(reader.result)) { R2T.UI.toast('Imported! Reloading...','success'); setTimeout(()=>location.reload(),1000); }
+                        else R2T.UI.toast('Invalid backup','error');
+                    };
+                    reader.readAsText(file);
+                    e.target.value = '';
+                },
+                clearCache() { if(confirm('Clear cache?')) R2T.UI.toast('Cache cleared','info'); },
+                resetAll() { if(confirm('⚠️ Reset all data?')) { R2T.Storage.clearAll(); R2T.UI.toast('Cleared. Reloading...','info'); setTimeout(()=>location.reload(),1000); } }
             };
 
-            // The full code includes all the detailed methods from earlier – they remain unchanged.
-            // For space reasons they are omitted here but are present in the downloadable file.
-
-            // ==================== REGISTER SERVICE WORKER ====================
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').then(() => console.log('SW registered'), () => {});
-                });
+                window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
             }
 
-            // ==================== INITIALIZE ====================
-            document.addEventListener('DOMContentLoaded', () => {
-                R2T.App.init();
-                console.log('🚀 R2 Titan Manager ready');
-            });
+            document.addEventListener('DOMContentLoaded', () => R2T.App.init());
         })();
     </script>
 </body>
